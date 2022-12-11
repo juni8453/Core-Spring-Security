@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 
 import javax.servlet.http.HttpSession;
@@ -11,6 +12,8 @@ import javax.servlet.http.HttpSession;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private UserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -53,6 +56,13 @@ public class SecurityConfig {
                 response.sendRedirect("/login");
             }))
             .deleteCookies("remember-me");
+
+        http
+            .rememberMe()
+            .rememberMeParameter("remember") // 기본 Parameter 명은 remember-me
+            .tokenValiditySeconds(3600) // 기본 유지 시간은 14일
+            .alwaysRemember(false) // 기본 값은 false, true 로 두면 Remember-me 기능이 활성화되지 않아도 항상 실행
+            .userDetailsService(userDetailsService); // Remember-me 인증 시 유저 계정을 조회하는 처리를 위한 클래스 설
 
         return http.build();
     }
