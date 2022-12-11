@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -63,6 +64,33 @@ public class SecurityConfig {
             .tokenValiditySeconds(3600) // 기본 유지 시간은 14일
             .alwaysRemember(false) // 기본 값은 false, true 로 두면 Remember-me 기능이 활성화되지 않아도 항상 실행
             .userDetailsService(userDetailsService); // Remember-me 인증 시 유저 계정을 조회하는 처리를 위한 클래스 설
+
+        http
+            .sessionManagement()
+            .maximumSessions(1) // 최대 Session 저장 허용 갯수
+            .maxSessionsPreventsLogin(true); // true -> 현재 사용자 인증 실패, 동시 로그인 차단 / false -> 이전 사용자 세션 만료
+
+        // 세션 고정 공격 대비 로직
+        // changeSessionId() 기본 값을 통해 공격자가 사용자에게 자신의 Cookie 를 집어넣고 인증받게 하더라도 인증 성공 후 Cookie 가 변경되기 때문에
+        // 세션 고정 공격을 막을 수 있다.
+        http
+            .sessionManagement()
+            .sessionFixation().changeSessionId();
+
+        // 세션 정책
+        /**
+         * 1. 항상 Security 에서 Session 생성
+         * 2. 필요 시 Security 에서 Session 생성
+         * 3. Security 가 Session 을 생성하지 않지만, 이미 존재하는 Session 이 있다면 사용
+         * 4. Security 가 Session 을 생성하지도 않고, 사용하지도 않음.
+         */
+
+        http
+            .sessionManagement()
+//            .sessionCreationPolicy(SessionCreationPolicy.ALWAYS) (1)
+            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED); // 기본 (2)
+//            .sessionCreationPolicy(SessionCreationPolicy.NEVER) (3)
+//            .sessionCreationPolicy(SessionCreationPolicy.STATELESS) (4)
 
         return http.build();
     }
