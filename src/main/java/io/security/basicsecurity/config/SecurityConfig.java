@@ -11,6 +11,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 
 import javax.servlet.http.HttpSession;
 
@@ -46,12 +48,28 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        // 인증, 인가 예외 API
+        http
+            .exceptionHandling()
+
+            // 인증 예외 처리
+            .authenticationEntryPoint(((request, response, authException) -> {
+                response.sendRedirect("/login");
+            }))
+
+            // 인가 예외 처리
+            .accessDeniedHandler((request, response, accessDeniedException) -> {
+                response.sendRedirect("/denied");
+            });
+
         // 인가 정책
         // 설정 시 구체적인 경로가 먼저 오고, 그것보다 큰 범위의 경로가 뒤에 오도록 설정하자.
         http
             // /shop 을 포함하는 모든 도메인에 대해 인가 요청 발생
 //            .antMatcher("/shop/**")
             .authorizeRequests()
+            .antMatchers("/login").permitAll()
             .antMatchers("/user").hasRole("USER")
             .antMatchers("/admin/pay").hasRole("ADMIN")
             .antMatchers("/admin/**").access("hasRole('ADMIN') or hasRole('SYS')")
@@ -68,8 +86,12 @@ public class SecurityConfig {
             .loginProcessingUrl("/login_proc") // form Tag (AntPathRequestMatcher Class 관련)
 
             .successHandler((request, response, authentication) -> {
-                System.out.println("authentication : " + authentication.getName());
-                response.sendRedirect("/");
+                // login 성공 시 Cache 에 사용자 정보를 저장해놨기 때문에 로그인 시도 시 바로 원하는 곳으로 보낼 수 있다.
+                HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+                // saveRequest 안에 원래 사용자가 가고자 했던 요청 정보가 저장되어있다.
+                SavedRequest saveRequest = requestCache.getRequest(request, response);
+                String redirectUrl = saveRequest.getRedirectUrl();
+                response.sendRedirect(redirectUrl);
             })
             .failureHandler(((request, response, exception) -> {
                 System.out.println("exception : " + exception.getMessage());
