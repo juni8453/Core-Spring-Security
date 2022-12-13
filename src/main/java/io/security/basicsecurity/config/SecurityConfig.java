@@ -5,7 +5,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 import javax.servlet.http.HttpSession;
@@ -17,9 +21,40 @@ public class SecurityConfig {
     private UserDetailsService userDetailsService;
 
     @Bean
+    public UserDetailsManager users() {
+
+        UserDetails user = User.builder()
+            .username("user")
+            .password("{noop}1111")
+            .roles("USER")
+            .build();
+
+        UserDetails sys = User.builder()
+            .username("sys")
+            .password("{noop}1111")
+            .roles("SYS")
+            .build();
+
+        UserDetails admin = User.builder()
+            .username("admin")
+            .password("{noop}1111")
+            .roles("ADMIN", "SYS", "USER")
+            .build();
+
+        return new InMemoryUserDetailsManager(user, sys, admin);
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // 인가 정책
-        http.authorizeRequests()
+        // 설정 시 구체적인 경로가 먼저 오고, 그것보다 큰 범위의 경로가 뒤에 오도록 설정하자.
+        http
+            // /shop 을 포함하는 모든 도메인에 대해 인가 요청 발생
+//            .antMatcher("/shop/**")
+            .authorizeRequests()
+            .antMatchers("/user").hasRole("USER")
+            .antMatchers("/admin/pay").hasRole("ADMIN")
+            .antMatchers("/admin/**").access("hasRole('ADMIN') or hasRole('SYS')")
             .anyRequest().authenticated();
 
         // 인증 정책
@@ -58,6 +93,7 @@ public class SecurityConfig {
             }))
             .deleteCookies("remember-me");
 
+        // 동시적 세션 제어
         http
             .rememberMe()
             .rememberMeParameter("remember") // 기본 Parameter 명은 remember-me
@@ -65,6 +101,10 @@ public class SecurityConfig {
             .alwaysRemember(false) // 기본 값은 false, true 로 두면 Remember-me 기능이 활성화되지 않아도 항상 실행
             .userDetailsService(userDetailsService); // Remember-me 인증 시 유저 계정을 조회하는 처리를 위한 클래스 설
 
+
+        // SessionManagementFilter, ConcurrentSessionFilter 의 연계로 처리
+        // SessionManagementFilter 에서 먼저 Session 만료시키고, ConcurrentSessionFilter 에서 Session 이 만료되었는지 확인하는 순서로 동작
+        // PPT 11 페이지 참고
         http
             .sessionManagement()
             .maximumSessions(1) // 최대 Session 저장 허용 갯수
@@ -77,7 +117,7 @@ public class SecurityConfig {
             .sessionManagement()
             .sessionFixation().changeSessionId();
 
-        // 세션 정책
+        // 세션 생성 정책
         /**
          * 1. 항상 Security 에서 Session 생성
          * 2. 필요 시 Security 에서 Session 생성
