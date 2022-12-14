@@ -60,7 +60,7 @@ public class SecurityConfig {
         // 인가 정책 설정
         http
             .authorizeRequests()
-            .antMatchers("/").permitAll()
+            .antMatchers("/", "/users").permitAll()
             .antMatchers("/mypage").hasRole("USER")
             .antMatchers("/message").hasRole("MANAGER")
             .antMatchers("/config").hasRole("ADMIN")
