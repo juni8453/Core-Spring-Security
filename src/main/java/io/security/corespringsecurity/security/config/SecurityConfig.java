@@ -3,49 +3,28 @@ package io.security.corespringsecurity.security.config;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // DB 와 연동한 인증처리를 위해 사용하는 AuthenticationManager 객체
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration auth) throws Exception {
+        return auth.getAuthenticationManager();
     }
 
     @Bean
-    public UserDetailsManager users() {
-        String password = passwordEncoder().encode("1111");
-
-        UserDetails user = User.builder()
-            .username("user")
-            .password(password)
-            .roles("USER")
-            .build();
-
-        UserDetails manager = User.builder()
-            .username("manager")
-            .password(password)
-            .roles("MANAGER", "USER")
-            .build();
-
-        UserDetails admin = User.builder()
-            .username("admin")
-            .password(password)
-            .roles("ADMIN", "MANAGER")
-            .build();
-
-        return new InMemoryUserDetailsManager(user, manager, admin);
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
     // 보안 필터를 적용할 필요가 없는 정적 리소스 ignore 처리

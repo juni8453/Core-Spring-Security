@@ -16,7 +16,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/mypage")
-    public String myPage() throws Exception {
+    public String myPage() {
         return "user/mypage";
     }
 
