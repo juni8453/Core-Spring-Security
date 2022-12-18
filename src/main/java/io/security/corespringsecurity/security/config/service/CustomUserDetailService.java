@@ -40,10 +40,8 @@ public class CustomUserDetailService implements UserDetailsService {
 
         /**
          * 유효성 검사를 모두 통과했다면, 유저 정보, 유저 권한을 담은 UserDetails 구현체가 최종적으로 Filter 까지 반환되어야하므로,
-         * AccountContext 객체를 반환한다. AccountContext 는 Authentication(유저정보, 유저권한) 이라고 생각하면 됨 !
+         * AccountContext 객체를 반환한다. AccountContext 는 반환 후 Authentication 구현체의 생성자를 통해 유저 정보 및 유저 권한을 셋팅하는 역할을 한다.
          */
-        // TODO 즉, AccountContext(유저 정보, 유저 권한) 을 반환하고 Provider 에서 Manager 로 넘길 때
-        //  비어있는 Authentication 객체에 UserDetails 객체가 저장되는 것.
         return new AccountContext(account, roles);
     }
 }

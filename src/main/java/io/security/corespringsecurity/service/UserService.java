@@ -4,7 +4,7 @@ import io.security.corespringsecurity.domain.Account;
 
 public interface UserService {
 
-    String passwordEncoding(String password);
+  String passwordEncoding(String password);
 
-    void createUser(Account account);
+  void createUser(Account account);
 }

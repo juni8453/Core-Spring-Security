@@ -16,33 +16,33 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+  }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring().requestMatchers(PathRequest.toStaticResources().atCommonLocations());
-    }
+  @Bean
+  public WebSecurityCustomizer webSecurityCustomizer() {
+    return web -> web.ignoring()
+        .requestMatchers(PathRequest.toStaticResources().atCommonLocations());
+  }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        // 인가 정책 설정
-        http
-            .authorizeRequests()
-            .antMatchers("/", "/users").permitAll()
-            .antMatchers("/mypage").hasRole("USER")
-            .antMatchers("/message").hasRole("MANAGER")
-            .antMatchers("/config").hasRole("ADMIN")
-            .anyRequest().authenticated();
+    // 인가 정책 설정
+    http
+        .authorizeRequests()
+        .antMatchers("/", "/users").permitAll()
+        .antMatchers("/mypage").hasRole("USER")
+        .antMatchers("/message").hasRole("MANAGER")
+        .antMatchers("/config").hasRole("ADMIN")
+        .anyRequest().authenticated();
 
+    // 인증 정책 설정
+    http
+        .formLogin();
 
-        // 인증 정책 설정
-        http
-            .formLogin();
-
-        return http.build();
-    }
+    return http.build();
+  }
 }

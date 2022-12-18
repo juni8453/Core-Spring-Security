@@ -5,23 +5,23 @@ import lombok.Data;
 @Data
 public class AccountDto {
 
-    private String username;
+  private String username;
 
-    private String password;
+  private String password;
 
-    private String email;
+  private String email;
 
-    private String age;
+  private String age;
 
-    private String role;
+  private String role;
 
-    public static Account toDto(AccountDto accountDto, String encodedPassword) {
-        return Account.builder()
-            .username(accountDto.getUsername())
-            .password(encodedPassword)
-            .email(accountDto.getEmail())
-            .age(accountDto.getAge())
-            .role(accountDto.getRole())
-            .build();
-    }
+  public static Account toDto(AccountDto accountDto, String encodedPassword) {
+    return Account.builder()
+        .username(accountDto.getUsername())
+        .password(encodedPassword)
+        .email(accountDto.getEmail())
+        .age(accountDto.getAge())
+        .role(accountDto.getRole())
+        .build();
+  }
 }

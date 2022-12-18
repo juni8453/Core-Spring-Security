@@ -4,6 +4,7 @@ import io.security.corespringsecurity.domain.Account;
 import io.security.corespringsecurity.repository.UserRepository;
 import io.security.corespringsecurity.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
